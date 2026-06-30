@@ -71,6 +71,7 @@ runs/*
 
 # 端私有日志
 apps/platform/logging/
+apps/platform/meta_logging/
 *.log
 apps/platform/configs/
 !apps/platform/configs/README.md
