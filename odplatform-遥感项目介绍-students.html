@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>基于 ODPlatform 的遥感目标检测智能开发平台 · 项目介绍(给同学)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* —— 地理空间浅色系 —— */
+    --bg:#f3f6f7; --bg-2:#e9f0f1; --panel:#ffffff; --panel-2:#eff5f6;
+    --line:#dce6ea; --line-2:#c6d4d9;
+    --ink:#13242c; --ink-soft:#2b3f48; --dim:#54666f; --faint:#8497a0;
+    --cyan:#0d7d99;   /* 传感/数据 */
+    --green:#1f9d63;  /* 模型 */
+    --amber:#b87d18;  /* 可复用小模块 */
+    --violet:#5358d4; /* 皇冠/推理 */
+    --rose:#c64b7a;   /* 应用 */
+    --disp:'Archivo','Noto Sans SC',sans-serif;
+    --body:'Noto Sans SC',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink-soft);font-family:var(--body);line-height:1.78;font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    background-image:
+      linear-gradient(rgba(13,125,153,.035) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(13,125,153,.035) 1px,transparent 1px);
+    background-size:46px 46px;}
+  ::selection{background:#bfe6ef;color:#06323d}
+  h1,h2,h3,h4{font-family:var(--disp);font-weight:700;line-height:1.2;letter-spacing:-.01em;color:var(--ink)}
+  .mono{font-family:var(--mono)}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 30px}
+  a{color:inherit}
+
+  .toolbar{position:fixed;top:18px;right:18px;z-index:200}
+  .toolbar button{font-family:var(--disp);font-weight:600;font-size:.82rem;padding:9px 17px;border-radius:9px;
+    border:1px solid var(--cyan);background:var(--cyan);color:#fff;cursor:pointer;transition:.2s;box-shadow:0 6px 18px rgba(13,125,153,.22)}
+  .toolbar button:hover{transform:translateY(-1px);box-shadow:0 9px 22px rgba(13,125,153,.28)}
+
+  .tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:var(--cyan);font-weight:500}
+  .tag.g{color:var(--green)}.tag.a{color:var(--amber)}.tag.v{color:var(--violet)}.tag.r{color:var(--rose)}
+
+  section{padding:64px 0;position:relative}
+  .sec-head{margin-bottom:38px;max-width:840px}
+  .sec-head .tag{display:block;margin-bottom:13px}
+  .sec-head h2{font-size:clamp(1.7rem,3.6vw,2.45rem);margin-bottom:15px}
+  .sec-head p{color:var(--dim);font-size:1.05rem}
+  .rule{height:1px;background:var(--line)}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px;
+    box-shadow:0 1px 2px rgba(19,36,44,.03),0 8px 24px rgba(19,36,44,.04)}
+
+  /* —— 封面 —— */
+  .cover{padding:74px 0 56px;position:relative;overflow:hidden}
+  .cover-glow{position:absolute;top:-20%;right:-10%;width:560px;height:560px;
+    background:radial-gradient(circle,rgba(13,125,153,.10),transparent 64%);filter:blur(20px);pointer-events:none}
+  .cover .wrap{position:relative;z-index:2}
+  .cover-badge{display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border:1px solid var(--line-2);border-radius:30px;
+    background:#fff;font-family:var(--mono);font-size:.73rem;color:var(--dim);margin-bottom:24px;box-shadow:0 2px 8px rgba(19,36,44,.04)}
+  .cover-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 3px rgba(31,157,99,.18)}
+  .cover h1{font-family:var(--body);font-weight:900;font-size:clamp(2rem,5vw,3.4rem);letter-spacing:-.02em;line-height:1.16;margin-bottom:20px}
+  .cover h1 .g{color:var(--cyan)}
+  .cover h1 .pin{font-family:var(--disp);font-weight:800}
+  .cover .lead{font-size:clamp(1.04rem,1.9vw,1.24rem);color:var(--dim);max-width:760px;margin-bottom:14px;font-weight:400}
+  .cover .lead b{color:var(--ink);font-weight:500}
+  .cover .meta{font-family:var(--mono);font-size:.82rem;color:var(--cyan);margin-top:22px}
+
+  .scene{margin-top:34px;border:1px solid var(--line-2);border-radius:16px;overflow:hidden;background:#fff;
+    box-shadow:0 2px 4px rgba(19,36,44,.04),0 18px 50px rgba(19,36,44,.07)}
+  .scene svg{display:block;width:100%;height:auto}
+  .scene-cap{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+    padding:11px 18px;border-top:1px solid var(--line);background:var(--panel-2);font-family:var(--mono);font-size:.72rem;color:var(--faint)}
+  .scene-cap b{color:var(--cyan);font-weight:500}
+
+  /* —— 平台 ≠ 数据集 强调带 —— */
+  .platform-band{background:linear-gradient(180deg,#fff, #f6fbfc);border:1px solid var(--line);border-radius:16px;
+    padding:30px 30px 26px;box-shadow:0 8px 28px rgba(19,36,44,.05)}
+  .platform-band .pb-tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--green);font-weight:500;margin-bottom:10px;display:block}
+  .platform-band h3{font-size:1.5rem;margin-bottom:10px}
+  .platform-band h3 em{font-style:normal;color:var(--cyan)}
+  .platform-band p{color:var(--dim);font-size:.98rem;max-width:760px}
+  .pb-flow{display:grid;grid-template-columns:minmax(150px,200px) 26px 1fr;gap:14px;align-items:center;margin-top:22px}
+  .pb-core{border:1.5px solid var(--cyan);background:rgba(13,125,153,.05);border-radius:12px;padding:16px 14px;text-align:center}
+  .pb-core .k{font-family:var(--disp);font-weight:800;color:var(--cyan);font-size:1.04rem}
+  .pb-core .s{font-family:var(--mono);font-size:.68rem;color:var(--dim);margin-top:3px}
+  .pb-arrow{display:grid;place-items:center;color:var(--line-2);font-size:1.3rem}
+  .pb-domains{display:flex;flex-wrap:wrap;gap:9px}
+  .pb-dom{border:1px solid var(--line-2);border-radius:9px;padding:9px 13px;background:#fff;font-size:.86rem;color:var(--ink-soft);font-weight:500;display:flex;align-items:center;gap:8px}
+  .pb-dom.live{border-color:var(--cyan);background:rgba(13,125,153,.06);color:var(--cyan)}
+  .pb-dom .ld{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.5}
+  .pb-dom.live .ld{opacity:1;box-shadow:0 0 0 3px rgba(13,125,153,.16)}
+  .pb-note{margin-top:18px;font-family:var(--mono);font-size:.78rem;color:var(--dim);border-top:1px dashed var(--line-2);padding-top:14px}
+  .pb-note b{color:var(--ink)}
+
+  .callout{border-left:3px solid var(--amber);background:rgba(184,125,24,.07);padding:18px 22px;border-radius:0 11px 11px 0;margin:22px 0}
+  .callout.green{border-color:var(--green);background:rgba(31,157,99,.07)}
+  .callout.cyan{border-color:var(--cyan);background:rgba(13,125,153,.07)}
+  .callout .h{font-family:var(--disp);font-weight:700;color:var(--ink);margin-bottom:6px;font-size:.98rem}
+  .callout p{color:var(--dim);font-size:.92rem;margin:0}
+  .callout p b{color:var(--ink)}
+  .bg-alt{background:var(--bg-2)}
+
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  .grid2{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+  @media(max-width:820px){.grid3{grid-template-columns:1fr}.grid2{grid-template-columns:1fr}.pb-flow{grid-template-columns:1fr;gap:12px}.pb-arrow{transform:rotate(90deg)}}
+
+  .chip{font-family:var(--mono);font-size:.72rem;padding:4px 10px;border-radius:6px;background:var(--panel-2);border:1px solid var(--line);color:var(--dim);display:inline-block;margin:3px 5px 3px 0}
+
+  footer{border-top:1px solid var(--line);background:#fff;padding:46px 0 34px;text-align:center}
+
+  @media print{
+    @page{size:A4;margin:13mm 11mm}
+    body{background:#fff!important;background-image:none!important}
+    .toolbar,.cover-glow{display:none!important}
+    section{padding:16px 0!important;page-break-inside:avoid}
+    .card,.platform-band,.scene{box-shadow:none!important;page-break-inside:avoid}
+    .bg-alt{background:#fff!important}
+    .pgbreak{page-break-before:always}
+    *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<div class="toolbar"><button onclick="window.print()">⤓ 打印 / 存 PDF</button></div>
+
+<!-- ===================== COVER ===================== -->
+<header class="cover">
+  <div class="cover-glow"></div>
+  <div class="wrap">
+    <div class="cover-badge"><span class="dot"></span> 项目介绍 · 给即将开始这个项目的你</div>
+    <h1>基于 <span class="g pin">ODPlatform</span> 的<br><span class="g">遥感目标检测</span>智能开发平台</h1>
+    <p class="lead">接下来这段时间,你不会只是"跑通一个 YOLO"。你会和队友一起,在<b>卫星 / 航拍图像</b>上,从零搭起一个完整的<b>目标检测开发平台</b>——它有数据流水线、有质量校验、有训练和评估、还有能跑到 <b>60+ FPS</b> 的实时推理。</p>
+    <p class="lead">这份文档帮你先看懂:<b>这个项目到底是什么、能做什么、由哪几块组成、跑起来长什么样</b>。读完它,你就知道自己要奔向哪里了。</p>
+    <p class="meta">// 一个平台 · 8 个模块 · 从遥感影像到实时检测画面的完整链路</p>
+
+    <!-- 招牌:俯拍卫星场景 + 检测框 -->
+    <div class="scene" role="img" aria-label="模拟遥感俯拍场景,框出飞机、舰船、车辆、储油罐等目标">
+      <svg viewBox="0 0 900 430" xmlns="http://www.w3.org/2000/svg" font-family="JetBrains Mono, monospace">
+        <defs>
+          <clipPath id="tile"><rect x="0" y="0" width="900" height="430" rx="2"/></clipPath>
+          <linearGradient id="water" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#dcebef"/><stop offset="1" stop-color="#cfe4ea"/>
+          </linearGradient>
+        </defs>
+        <g clip-path="url(#tile)">
+          <!-- 底图:地块/水系/跑道 -->
+          <rect x="0" y="0" width="900" height="430" fill="#eef4f3"/>
+          <!-- 水系(对角带) -->
+          <path d="M0,300 L420,150 L520,150 L0,430 Z" fill="url(#water)"/>
+          <path d="M520,150 L900,0 L900,90 L640,210 Z" fill="url(#water)" opacity=".7"/>
+          <!-- 农田/地块 -->
+          <rect x="40" y="40" width="190" height="120" rx="3" fill="#e3ecdd"/>
+          <rect x="240" y="40" width="150" height="120" rx="3" fill="#ece7d6"/>
+          <rect x="40" y="170" width="150" height="90" rx="3" fill="#e8efe1" opacity=".7"/>
+          <!-- 跑道/道路 -->
+          <rect x="430" y="60" width="320" height="26" rx="3" fill="#e6eaec" transform="rotate(-8 590 73)"/>
+          <line x1="445" y1="73" x2="735" y2="73" stroke="#c9d3d6" stroke-width="1.5" stroke-dasharray="14 10" transform="rotate(-8 590 73)"/>
+          <!-- 城区色块 -->
+          <g fill="#e7ebec">
+            <rect x="600" y="250" width="80" height="60" rx="2"/><rect x="690" y="250" width="50" height="60" rx="2"/>
+            <rect x="600" y="320" width="60" height="70" rx="2"/><rect x="670" y="320" width="70" height="70" rx="2"/>
+          </g>
+
+          <!-- 经纬网 -->
+          <g stroke="#0d7d99" stroke-opacity=".10" stroke-width="1">
+            <line x1="150" y1="0" x2="150" y2="430"/><line x1="300" y1="0" x2="300" y2="430"/>
+            <line x1="450" y1="0" x2="450" y2="430"/><line x1="600" y1="0" x2="600" y2="430"/><line x1="750" y1="0" x2="750" y2="430"/>
+            <line x1="0" y1="107" x2="900" y2="107"/><line x1="0" y1="215" x2="900" y2="215"/><line x1="0" y1="322" x2="900" y2="322"/>
+          </g>
+
+          <!-- ============ 目标 + 检测框 ============ -->
+          <!-- 飞机 (跑道上) -->
+          <g transform="translate(540 64) rotate(-8)">
+            <g fill="#5a6b73">
+              <rect x="-3" y="-22" width="6" height="44" rx="3"/>
+              <polygon points="0,-14 26,2 26,7 0,-2"/><polygon points="0,-14 -26,2 -26,7 0,-2"/>
+              <polygon points="0,14 11,22 11,25 0,20"/><polygon points="0,14 -11,22 -11,25 0,20"/>
+            </g>
+          </g>
+          <!-- 飞机框 (cyan) -->
+          <g stroke="#0d7d99" stroke-width="2" fill="none">
+            <path d="M495,30 h-14 v14 M585,30 h14 v14 M495,104 h-14 v-14 M585,104 h14 v-14"/>
+          </g>
+          <rect x="481" y="14" width="118" height="15" rx="2" fill="#0d7d99"/>
+          <text x="487" y="25" fill="#fff" font-size="10" font-weight="700">aircraft · 0.96</text>
+
+          <!-- 舰船 1 (水面) -->
+          <g transform="translate(250 250) rotate(24)">
+            <path d="M-34,0 q4,-9 34,-9 q22,0 30,9 q-8,8 -30,8 q-30,0 -34,-8z" fill="#5f7078"/>
+            <rect x="-6" y="-7" width="14" height="8" rx="1.5" fill="#4a5a62"/>
+          </g>
+          <g stroke="#5358d4" stroke-width="2" fill="none">
+            <path d="M196,224 h-13 v13 M306,224 h13 v13 M196,286 h-13 v-13 M306,286 h13 v-13"/>
+          </g>
+          <rect x="183" y="208" width="78" height="15" rx="2" fill="#5358d4"/>
+          <text x="189" y="219" fill="#fff" font-size="10" font-weight="700">ship · 0.91</text>
+
+          <!-- 舰船 2 -->
+          <g transform="translate(120 330) rotate(-12)">
+            <path d="M-26,0 q3,-7 26,-7 q17,0 24,7 q-7,6 -24,6 q-23,0 -26,-6z" fill="#647580"/>
+          </g>
+          <g stroke="#5358d4" stroke-width="2" fill="none">
+            <path d="M78,312 h-12 v12 M168,312 h12 v12 M78,360 h-12 v-12 M168,360 h12 v-12"/>
+          </g>
+          <rect x="66" y="297" width="78" height="15" rx="2" fill="#5358d4"/>
+          <text x="72" y="308" fill="#fff" font-size="10" font-weight="700">ship · 0.88</text>
+
+          <!-- 车辆群 (城区) -->
+          <g fill="#5e6f78">
+            <rect x="624" y="276" width="15" height="9" rx="2"/><rect x="650" y="284" width="15" height="9" rx="2"/>
+            <rect x="636" y="298" width="15" height="9" rx="2"/>
+          </g>
+          <g stroke="#1f9d63" stroke-width="2" fill="none">
+            <path d="M612,262 h-12 v12 M690,262 h12 v12 M612,318 h-12 v-12 M690,318 h12 v-12"/>
+          </g>
+          <rect x="600" y="246" width="120" height="15" rx="2" fill="#1f9d63"/>
+          <text x="606" y="257" fill="#fff" font-size="10" font-weight="700">vehicle ×3 · 0.90</text>
+
+          <!-- 储油罐 (圆形目标) -->
+          <g>
+            <circle cx="800" cy="300" r="22" fill="#e9e2cf" stroke="#b6a888" stroke-width="2"/>
+            <circle cx="800" cy="300" r="12" fill="none" stroke="#b6a888" stroke-width="1.5"/>
+          </g>
+          <g stroke="#b87d18" stroke-width="2" fill="none">
+            <path d="M772,272 h-12 v12 M828,272 h12 v12 M772,328 h-12 v-12 M828,328 h12 v-12"/>
+          </g>
+          <rect x="760" y="256" width="122" height="15" rx="2" fill="#b87d18"/>
+          <text x="766" y="267" fill="#fff" font-size="10" font-weight="700">storage-tank · 0.87</text>
+
+          <!-- 角裁切标记 -->
+          <g stroke="#13242c" stroke-opacity=".35" stroke-width="1.5">
+            <path d="M14,14 h18 M14,14 v18 M886,14 h-18 M886,14 v18 M14,416 h18 M14,416 v-18 M886,416 h-18 M886,416 v-18"/>
+          </g>
+        </g>
+      </svg>
+      <div class="scene-cap">
+        <span>TILE&nbsp;<b>R-03</b>&nbsp;·&nbsp;31.2304°N, 121.4737°E&nbsp;·&nbsp;GSD 0.5 m/px</span>
+        <span><b>6</b> detections&nbsp;·&nbsp;aircraft / ship / vehicle / tank</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ===================== PLATFORM ≠ DATASET ===================== -->
+<section id="platform">
+  <div class="wrap">
+    <div class="platform-band">
+      <span class="pb-tag">先把最重要的一件事说清楚</span>
+      <h3>遥感,是我们这次的<em>练兵场</em>;平台,才是你真正的本事</h3>
+      <p>这个项目叫 <b style="color:var(--ink)">ODPlatform</b>(Object Detection Platform,通用目标检测开发平台)。它在设计上<b style="color:var(--ink)">和具体数据、具体任务是解耦的</b>——我们这次拿遥感影像(卫星 / 航拍里找飞机、舰船、车辆、储油罐……)来练手,但平台本身不绑死在"遥感"上。</p>
+      <div class="pb-flow">
+        <div class="pb-core"><div class="k">ODPlatform</div><div class="s">同一套工程内核</div></div>
+        <div class="pb-arrow">→</div>
+        <div class="pb-domains">
+          <span class="pb-dom live"><span class="ld"></span>遥感检测(本次)</span>
+          <span class="pb-dom"><span class="ld"></span>工业质检</span>
+          <span class="pb-dom"><span class="ld"></span>安防 / 安全帽</span>
+          <span class="pb-dom"><span class="ld"></span>无人机巡检</span>
+          <span class="pb-dom"><span class="ld"></span>医学影像</span>
+          <span class="pb-dom"><span class="ld"></span>……换一份数据即可</span>
+        </div>
+      </div>
+      <p class="pb-note">▸ <b>换场景,代码几乎不动</b>:数据放在平台外,任务通过配置切换。想做别的检测?换一份带标注的数据 + 改一行配置,整条"数据 → 训练 → 评估 → 推理"的链路原样复用。这,就是"平台"两个字的价值——也是你这段时间真正要练的东西。</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ===================== WHAT ===================== -->
+<section id="what">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag">01 / 这是什么</span>
+      <h2>一句话:它是一个"检测平台",不是一个脚本</h2>
+      <p>很多人对 AI 项目的印象是"写个几百行的脚本,调用模型跑一下"。ODPlatform 不一样——它是一个像<b style="color:var(--ink)">真实软件产品</b>那样组织起来的系统。你给它一批带标注的遥感图像,它能帮你把整条"数据 → 训练 → 评估 → 实时检测"的链路全部跑通。</p>
+    </div>
+
+    <div class="grid2">
+      <div class="card">
+        <div class="tag" style="margin-bottom:14px">名字的含义</div>
+        <p style="color:var(--dim);font-size:.95rem">ODPlatform = <b style="color:var(--ink)">O</b>bject <b style="color:var(--ink)">D</b>etection <b style="color:var(--ink)">Platform</b>,通用目标检测开发平台。"目标检测"是它干的事(在图里找出物体、框出来并分类),"平台"是说它不是一次性脚本,而是一套<b style="color:var(--ink)">可以反复用、能扩展</b>的工程基底。</p>
+      </div>
+      <div class="card">
+        <div class="tag v" style="margin-bottom:14px">遥感这一仗,难在哪</div>
+        <p style="color:var(--dim);font-size:.95rem">遥感影像不是普通照片:<b style="color:var(--ink)">目标小、密集、俯视、尺度跨度大</b>(一张图里既有大油罐又有小车),还常常一图多类。这些恰恰会逼出平台里"数据校验、可复现划分、实时推理优化"这些真功夫——比拿一张街景图练手扎实得多。</p>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="h">🎯 你做完之后能说出的一句话</div>
+      <p>"我参与开发了一个<b>遥感目标检测平台</b>,它能把原始标注数据自动处理、校验、训练成模型,并部署成一个能实时跑到 60+ FPS 的检测服务,还带桌面端界面;而且这套平台换个数据就能做别的检测任务。" —— 这句话,比"我用 YOLO 训了个模型"有分量得多。</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ===================== WHY IT'S DIFFERENT ===================== -->
+<section id="why" class="bg-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag a">02 / 它和"普通 AI 作业"差在哪</span>
+      <h2>同样是检测,做法天差地别</h2>
+      <p>了解这个差别很重要——因为它决定了你这段时间到底能学到什么、简历上能写什么。</p>
+    </div>
+    <div class="grid2">
+      <div class="card" style="border-color:rgba(198,75,122,.3)">
+        <div class="tag r" style="margin-bottom:14px">大多数人做的</div>
+        <h3 style="color:var(--rose);font-size:1.15rem;margin-bottom:16px">一个文件跑天下</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:11px;color:var(--dim);font-size:.92rem">
+          <li>📄 所有代码堆在一个文件里</li>
+          <li>🗂 数据不检查,训练跑一半才发现标注错了</li>
+          <li>🔧 超参数写死在代码里,改一次跑一次</li>
+          <li>📉 推理一加显示就卡成 15 FPS</li>
+          <li>🤷 学到的只是"会调用一个库"</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:rgba(31,157,99,.32)">
+        <div class="tag g" style="margin-bottom:14px">你将做的(ODPlatform)</div>
+        <h3 style="color:var(--green);font-size:1.15rem;margin-bottom:16px">八个模块各司其职</h3>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:11px;color:var(--dim);font-size:.92rem">
+          <li>🧱 代码分成清晰的模块,各管一摊</li>
+          <li>✅ 数据训练前先体检,脏数据当场拦下</li>
+          <li>⚙️ 改超参数只动配置文件,代码不碰</li>
+          <li>⚡ 多线程优化,加了显示也稳定 60+ FPS</li>
+          <li>🚀 学到的是"怎么搭一个真正的系统"</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap pgbreak"><div class="rule"></div></div>
+
+<!-- ===================== ARCHITECTURE ===================== -->
+<section id="arch">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag">03 / 它由哪几块组成</span>
+      <h2>整个平台,拆成这几层来看</h2>
+      <p>别被"系统架构"吓到。其实就是把一个大项目,按"谁干什么"分成几层。从上到下,越往下越是"地基"。看懂这张图,你就掌握了整个项目的骨架。</p>
+    </div>
+
+    <div class="card" style="overflow-x:auto;padding:30px 22px">
+      <div style="min-width:760px">
+      <svg viewBox="0 0 820 482" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;font-family:var(--mono)">
+        <defs>
+          <marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L8,4.5 L0,9 z" fill="#1f9d63"/></marker>
+        </defs>
+        <!-- ① 命令 -->
+        <text x="16" y="30" fill="#8497a0" font-size="11" letter-spacing="2">① 你敲的命令</text>
+        <rect x="16" y="40" width="788" height="46" rx="9" fill="#fff" stroke="#c6d4d9"/>
+        <text x="410" y="62" fill="#13242c" font-size="12.5" text-anchor="middle" font-weight="700">odp-transform · odp-validate · odp-train · odp-eval · odp-infer ...</text>
+        <text x="410" y="79" fill="#8497a0" font-size="10" text-anchor="middle">每个功能,都是一条简单的命令</text>
+
+        <!-- ② 数据模块 -->
+        <text x="16" y="120" fill="#8497a0" font-size="11" letter-spacing="2">② 处理数据的模块</text>
+        <rect x="16" y="130" width="255" height="62" rx="9" fill="rgba(13,125,153,.05)" stroke="#0d7d99" stroke-opacity=".55"/>
+        <text x="143" y="155" fill="#0d7d99" font-size="13" text-anchor="middle" font-weight="700">数据流水线</text>
+        <text x="143" y="174" fill="#54666f" font-size="10" text-anchor="middle">把原始遥感数据整理成能训练的格式</text>
+        <rect x="282" y="130" width="255" height="62" rx="9" fill="rgba(13,125,153,.05)" stroke="#0d7d99" stroke-opacity=".55"/>
+        <text x="409" y="155" fill="#0d7d99" font-size="13" text-anchor="middle" font-weight="700">数据验证</text>
+        <text x="409" y="174" fill="#54666f" font-size="10" text-anchor="middle">训练前给数据做体检,拦下脏数据</text>
+        <rect x="548" y="130" width="256" height="62" rx="9" fill="rgba(13,125,153,.05)" stroke="#0d7d99" stroke-opacity=".55"/>
+        <text x="676" y="155" fill="#0d7d99" font-size="13" text-anchor="middle" font-weight="700">运行配置</text>
+        <text x="676" y="174" fill="#54666f" font-size="10" text-anchor="middle">超参数都放配置里,改它不改代码</text>
+
+        <!-- ③ 模型模块 -->
+        <text x="16" y="224" fill="#8497a0" font-size="11" letter-spacing="2">③ 训练和用模型的模块</text>
+        <rect x="16" y="234" width="255" height="62" rx="9" fill="rgba(31,157,99,.05)" stroke="#1f9d63" stroke-opacity=".55"/>
+        <text x="143" y="259" fill="#1f9d63" font-size="13" text-anchor="middle" font-weight="700">训练</text>
+        <text x="143" y="278" fill="#54666f" font-size="10" text-anchor="middle">训模型,支持断点续训,自动存权重</text>
+        <rect x="282" y="234" width="255" height="62" rx="9" fill="rgba(31,157,99,.05)" stroke="#1f9d63" stroke-opacity=".55"/>
+        <text x="409" y="259" fill="#1f9d63" font-size="13" text-anchor="middle" font-weight="700">评估</text>
+        <text x="409" y="278" fill="#54666f" font-size="10" text-anchor="middle">算准确率(mAP 等),看模型行不行</text>
+        <rect x="548" y="234" width="256" height="62" rx="9" fill="rgba(83,88,212,.06)" stroke="#5358d4" stroke-opacity=".6"/>
+        <text x="676" y="259" fill="#5358d4" font-size="13" text-anchor="middle" font-weight="700">推理 ★</text>
+        <text x="676" y="278" fill="#54666f" font-size="10" text-anchor="middle">让模型实时跑起来,60+ FPS</text>
+
+        <!-- ④ 可复用小模块 -->
+        <text x="16" y="328" fill="#8497a0" font-size="11" letter-spacing="2">④ 两个能单独拿走用的小模块</text>
+        <rect x="16" y="338" width="394" height="56" rx="9" fill="rgba(184,125,24,.06)" stroke="#b87d18" stroke-opacity=".5"/>
+        <text x="213" y="363" fill="#b87d18" font-size="13" text-anchor="middle" font-weight="700">帧源 frame_source</text>
+        <text x="213" y="381" fill="#54666f" font-size="10" text-anchor="middle">统一从图片/视频/摄像头/网络流读画面</text>
+        <rect x="421" y="338" width="383" height="56" rx="9" fill="rgba(198,75,122,.06)" stroke="#c64b7a" stroke-opacity=".5"/>
+        <text x="612" y="363" fill="#c64b7a" font-size="13" text-anchor="middle" font-weight="700">可视化 visualization</text>
+        <text x="612" y="381" fill="#54666f" font-size="10" text-anchor="middle">把检测框和标签画得好看(圆角框+中英文)</text>
+
+        <!-- ⑤ 地基 -->
+        <text x="16" y="426" fill="#8497a0" font-size="11" letter-spacing="2">⑤ 地基:大家都要用的公共工具</text>
+        <rect x="16" y="436" width="788" height="40" rx="9" fill="#eef5f6" stroke="#c6d4d9"/>
+        <text x="410" y="461" fill="#13242c" font-size="11.5" text-anchor="middle">common —— 路径定位 · 日志 · 结果封装 · 性能计时(每个模块都靠它)</text>
+
+        <!-- 箭头 -->
+        <line x1="410" y1="86" x2="410" y2="128" stroke="#1f9d63" stroke-width="1.5" marker-end="url(#ar)" opacity=".55"/>
+        <line x1="143" y1="192" x2="143" y2="232" stroke="#1f9d63" stroke-width="1.5" marker-end="url(#ar)" opacity=".55"/>
+        <line x1="676" y1="192" x2="676" y2="232" stroke="#1f9d63" stroke-width="1.5" marker-end="url(#ar)" opacity=".55"/>
+      </svg>
+      </div>
+    </div>
+    <div class="callout cyan" style="margin-top:22px">
+      <div class="h">💡 怎么记住这张图</div>
+      <p>从上往下:<b>你敲命令</b> → 命令触发<b>某个模块</b>干活 → 模块都站在<b>公共工具(common)这块地基</b>上。青色管数据、绿色管模型、紫色是皇冠(实时推理)、橙/粉是两个能单独拿走复用的小模块。就这么简单。</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap pgbreak"><div class="rule"></div></div>
+
+<!-- ===================== JOURNEY ===================== -->
+<section id="journey">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag v">04 / 数据的一生</span>
+      <h2>跟着一张遥感图,走完整个流程</h2>
+      <p>理解这个项目最好的方式,是想象一张卫星 / 航拍图,是怎么一步步变成"实时检测画面"的。这条路,就是你们要一起搭起来的东西。</p>
+    </div>
+
+    <style>
+      .journey{display:flex;flex-direction:column;gap:0}
+      .jstep{display:grid;grid-template-columns:54px 1fr;gap:20px;position:relative;padding-bottom:26px}
+      .jstep:not(:last-child)::before{content:'';position:absolute;left:26px;top:50px;bottom:-2px;width:2px;background:var(--line)}
+      .jnum{width:54px;height:54px;border-radius:13px;display:grid;place-items:center;font-family:var(--disp);font-weight:800;font-size:1.25rem;border:1.5px solid;background:#fff;z-index:2}
+      .jbody h3{font-size:1.12rem;color:var(--ink);margin-bottom:6px}
+      .jbody p{color:var(--dim);font-size:.93rem}
+      .jbody .by{font-family:var(--mono);font-size:.74rem;margin-top:7px}
+    </style>
+
+    <div class="journey">
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--cyan);color:var(--cyan)">1</div>
+        <div class="jbody">
+          <h3>一批杂乱的原始遥感数据</h3>
+          <p>起点是一批卫星 / 航拍图 + 它们的标注文件(标注 = 告诉模型"这张图里,哪个位置是飞机、舰船还是车辆")。但这些数据格式可能五花八门、目标又小又密,不能直接喂给模型。</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--cyan);color:var(--cyan)">2</div>
+        <div class="jbody">
+          <h3>过一遍"数据流水线",变成标准格式</h3>
+          <p>流水线把杂乱数据转换成训练框架认识的标准格式,顺便把数据分成"训练用"和"验证用"两份(固定随机种子,保证可复现),并生成一份配置清单(data.yaml)。</p>
+          <p class="by" style="color:var(--cyan)">▸ 这块由「数据工程师」负责</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--cyan);color:var(--cyan)">3</div>
+        <div class="jbody">
+          <h3>体检关卡:数据验证</h3>
+          <p>训练前先给数据做个全面体检——图片和标注是不是一一对上了?框的坐标合不合法(遥感小目标尤其容易出框)?有没有标注错的类别?<b style="color:var(--ink)">有问题当场拦下</b>,绝不带病训练。</p>
+          <p class="by" style="color:var(--cyan)">▸ 也由「数据工程师」负责</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--green);color:var(--green)">4</div>
+        <div class="jbody">
+          <h3>开始训练</h3>
+          <p>数据没问题了,就喂给模型开始训练。这个过程支持"断点续训"(中途断了能接着练),练完会自动把最好的模型权重(best.pt)存档,还留一份"这次是怎么训的"记录。</p>
+          <p class="by" style="color:var(--green)">▸ 这块由「算法工程师」负责</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--green);color:var(--green)">5</div>
+        <div class="jbody">
+          <h3>评估:这模型到底行不行?</h3>
+          <p>训练完不能光说"我觉得不错"。要用验证集算出客观指标(mAP、精确率、召回率),用数字证明模型的好坏。</p>
+          <p class="by" style="color:var(--green)">▸ 也由「算法工程师」负责</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--violet);color:var(--violet)">6</div>
+        <div class="jbody">
+          <h3>让模型实时跑起来(最难也最酷的一步)</h3>
+          <p>把训练好的模型,接到一条"多线程流水线"上,让它能<b style="color:var(--ink)">实时</b>处理航拍视频 / 摄像头画面。难点在于:一边检测一边画框显示,还要保持 60+ FPS 不卡顿。</p>
+          <p class="by" style="color:var(--violet)">▸ 这块由「推理工程师」负责</p>
+        </div>
+      </div>
+      <div class="jstep">
+        <div class="jnum" style="border-color:var(--rose);color:var(--rose)">7</div>
+        <div class="jbody">
+          <h3>变成你能看见的画面</h3>
+          <p>最后,把检测结果画成漂亮的框 + 标签,显示在一个桌面端窗口里。到这一步,你就能打开一段航拍视频,看到框实时套在目标上了——整条链路打通!</p>
+          <p class="by" style="color:var(--rose)">▸ 这块由「应用工程师」负责</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="callout green">
+      <div class="h">🤝 看出来了吗?这是一场接力</div>
+      <p>每一棒交给下一棒:数据工程师把干净数据交给算法工程师,算法工程师把训好的模型交给推理工程师,推理工程师把引擎交给应用工程师。<b>谁也离不开谁</b>——这就是真实的团队协作。你具体扮演哪一棒、要交付什么,看《岗位介绍》那份文档。</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap pgbreak"><div class="rule"></div></div>
+
+<!-- ===================== 8 MODULES ===================== -->
+<section id="modules" class="bg-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag">05 / 八个模块速览</span>
+      <h2>这八块,就是你们要建的全部</h2>
+      <p>每块都是一个独立、完整的小系统。下面用大白话告诉你每块是干嘛的,以及它最酷的一个点。</p>
+    </div>
+
+    <style>
+      .mod{display:grid;grid-template-columns:1fr;gap:14px}
+      .mcard{border:1px solid var(--line);border-radius:13px;background:#fff;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;
+        box-shadow:0 1px 2px rgba(19,36,44,.03)}
+      .mtag{font-family:var(--mono);font-size:.78rem;font-weight:700;padding:6px 12px;border-radius:8px;white-space:nowrap;border:1px solid}
+      .mcard h3{font-size:1.08rem;color:var(--ink);margin-bottom:6px}
+      .mcard p{font-size:.9rem;color:var(--dim);margin-bottom:8px}
+      .mcard .cool{font-size:.84rem;color:var(--green)}
+      .mcard .cool b{color:var(--ink);font-weight:600}
+    </style>
+
+    <div class="mod">
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--cyan);color:var(--cyan)">数据流水线</span>
+        <div><h3>把杂乱数据整理成标准格式</h3><p>原始标注数据格式各异,这块负责统一转换、切分训练/验证集、生成配置清单。</p><p class="cool">✦ 最酷的点:<b>用"注册表"设计,加一种新数据格式只要注册一下,主流程一行不改。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--cyan);color:var(--cyan)">数据验证</span>
+        <div><h3>训练前的数据体检站</h3><p>检查图片和标注配对、坐标合法性、类别越界等问题,一次扫描全部查完,出一份报告。</p><p class="cool">✦ 最酷的点:<b>"只检查不修改",像体检不动手术——有问题先报告,训练前就拦住。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--cyan);color:var(--cyan)">运行配置</span>
+        <div><h3>所有超参数的家</h3><p>把学习率、训练轮数等所有可调参数从代码里拿出来,放进配置文件,改参数不用碰代码。</p><p class="cool">✦ 最酷的点:<b>一条命令自动生成配置模板,你只管填,出错了还会精确提示哪里填错。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--green);color:var(--green)">训练</span>
+        <div><h3>把模型训出来</h3><p>组织整个训练流程,训练完自动归档最好的权重,并记录"这次实验是怎么跑的"。</p><p class="cool">✦ 最酷的点:<b>支持断点续训(断了能接着练)+ 审计快照(实验永远可复现)。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--green);color:var(--green)">评估</span>
+        <div><h3>用数字证明模型行不行</h3><p>拿验证集算出 mAP、精确率、召回率等客观指标,给模型打分。</p><p class="cool">✦ 最酷的点:<b>它和"训练"长得很像,但故意设计得不一样——这背后的取舍,是答辩高光。</b></p></div>
+      </div>
+      <div class="mcard" style="border-color:rgba(83,88,212,.4)">
+        <span class="mtag" style="border-color:var(--violet);color:var(--violet)">推理 ★</span>
+        <div><h3>让模型实时飞起来(全项目的皇冠)</h3><p>用四级多线程流水线,让模型实时处理航拍视频/摄像头,边检测边显示还不卡。</p><p class="cool">✦ 最酷的点:<b>从卡顿的 15 FPS 优化到流畅的 60+ FPS,还能被桌面端/网页等多种界面复用。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--amber);color:var(--amber)">帧源</span>
+        <div><h3>统一"从哪读画面"这件事</h3><p>不管输入是图片、视频、文件夹、摄像头还是网络流(RTSP),对上层都是一样的用法。</p><p class="cool">✦ 最酷的点:<b>零依赖,能整包拷到任何项目直接用——天然的简历作品。</b></p></div>
+      </div>
+      <div class="mcard">
+        <span class="mtag" style="border-color:var(--rose);color:var(--rose)">可视化</span>
+        <div><h3>把检测结果画得好看</h3><p>圆角检测框、中英文标签、自适应配色,让结果一眼就专业。</p><p class="cool">✦ 最酷的点:<b>内置文字渲染缓存,避免每帧重画文字拖慢速度——它是 60+ FPS 的幕后功臣。</b></p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ===================== TECH ===================== -->
+<section id="tech">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag">06 / 你会接触到的技术</span>
+      <h2>做完这个项目,你的工具箱里会多这些</h2>
+      <p>不用现在全都会,跟着做就会了。但你可以先看看,这些都是企业里真在用的东西。</p>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="tag" style="margin-bottom:16px">AI / 视觉相关</div>
+        <div><span class="chip">Python</span><span class="chip">YOLO 目标检测</span><span class="chip">PyTorch</span><span class="chip">OpenCV</span><span class="chip">NumPy</span><span class="chip">遥感影像处理</span><span class="chip">模型评估指标</span><span class="chip">数据增强</span></div>
+      </div>
+      <div class="card">
+        <div class="tag g" style="margin-bottom:16px">工程能力(更值钱的部分)</div>
+        <div><span class="chip">多线程 / 并发</span><span class="chip">性能优化</span><span class="chip">Git 协作</span><span class="chip">模块化设计</span><span class="chip">命令行工具</span><span class="chip">PyQt 桌面端</span><span class="chip">单元测试</span></div>
+      </div>
+    </div>
+    <div class="callout cyan" style="margin-top:22px">
+      <div class="h">💡 划重点:右边那栏才是你的差异化竞争力</div>
+      <p>会调用 YOLO 的人很多,但<b>既懂检测、又懂多线程优化、又懂模块化工程设计、又有团队协作经验</b>的应届生很少。这个项目最大的价值,就是帮你把右边那栏的能力,真实地练出来。</p>
+    </div>
+  </div>
+</section>
+
+<div class="wrap"><div class="rule"></div></div>
+
+<!-- ===================== WHAT YOU GAIN ===================== -->
+<section id="gain" class="bg-alt">
+  <div class="wrap">
+    <div class="sec-head">
+      <span class="tag a">07 / 你能收获什么</span>
+      <h2>这段时间结束,你会带走这些</h2>
+    </div>
+    <div class="grid3">
+      <div class="card">
+        <h3 style="font-size:1.05rem;margin-bottom:10px">🎓 一个能打的毕设</h3>
+        <p style="color:var(--dim);font-size:.9rem">不是"调包跑通"的玩具,是有架构、有设计、有工程深度的完整系统。答辩时被追问"怎么设计的",你答得上来。</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.05rem;margin-bottom:10px">💼 一段真实的项目经历</h3>
+        <p style="color:var(--dim);font-size:.9rem">你能在简历上写一个具体岗位(数据/算法/推理/应用/架构)+ 一段真实的协作经历。这比"熟悉 Python"有说服力一百倍。</p>
+      </div>
+      <div class="card">
+        <h3 style="font-size:1.05rem;margin-bottom:10px">🧠 工程师的思维方式</h3>
+        <p style="color:var(--dim);font-size:.9rem">你会第一次真正理解:为什么代码要分模块、为什么要先校验数据、为什么接口要稳定。这些判断力,AI 替代不了。</p>
+      </div>
+    </div>
+
+    <div class="callout green" style="margin-top:24px">
+      <div class="h">🚀 接下来做什么</div>
+      <p>这份是让你看懂"项目是什么"。下一步,去看《岗位介绍》——搞清楚<b>你在团队里是哪个岗位、具体负责哪几块、要和谁交接什么</b>。然后,就可以和队友一起开工了。准备好了吗?</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p style="font-family:var(--disp);font-weight:800;font-size:1.2rem;color:var(--ink);margin-bottom:10px">基于 ODPlatform 的遥感目标检测智能开发平台</p>
+    <p style="color:var(--dim);font-size:.92rem;max-width:620px;margin:0 auto">从一批原始卫星 / 航拍图,到一个实时检测画面。这条路,你和队友一起走完——而这套平台,换个数据还能做更多。</p>
+    <div class="rule" style="margin:24px 0"></div>
+    <p style="color:var(--faint);font-size:.78rem;font-family:var(--mono)">项目介绍 · 给同学 &nbsp;//&nbsp; 数据 → 训练 → 评估 → 实时推理</p>
+  </div>
+</footer>
+
+</body>
+</html>

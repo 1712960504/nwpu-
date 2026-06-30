@@ -45,39 +45,45 @@ htmlcov/
 .ruff_cache/
 
 # ============================================================
-# ODPlatform 专属(Stage 1 Monorepo 路径)
+# ODPlatform 专属
 # ============================================================
 
-# 数据集不进 git(走外部存储或 Git LFS)
+# 数据集不进 git
 data/raw/
 data/processed/
+data/train/
+data/val/
+data/test/
 !data/README.md
-!data/.gitkeep
 
 # 模型权重不进 git
 models/pretrained/*.pt
 models/trained/*.pt
 models/trained/*/
+models/checkpoints/
 !models/pretrained/README.md
 !models/trained/README.md
+!models/checkpoints/README.md
 
-# 训练运行结果(每次自动产生新目录)
+# 训练运行结果
 runs/*
 !runs/README.md
 
-# 端私有日志(运行时产生,各机器不同)
+# 端私有日志
 apps/platform/logging/
 *.log
 apps/platform/configs/
+!apps/platform/configs/README.md
 *.yaml
+
+# Claude Code
+.claude/
 
 # 临时文件
 tmp/
 temp/
 
-# ============================================================
 # 大文件 / 二进制
-# ============================================================
 *.pkl
 *.h5
 *.npz

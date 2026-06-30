@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ODPlatform · 基础设施第一天 —— 仓库组织 / 装饰器 / 日志工具</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Noto+Sans+SC:wght@300;400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<style>
+  :root{
+    --bg:#f4f7f8; --bg-2:#e9f0f1; --panel:#fff; --panel-2:#eff5f6;
+    --line:#dce6ea; --line-2:#c6d4d9;
+    --ink:#13242c; --ink-soft:#273a43; --dim:#54666f; --faint:#8497a0;
+    --cyan:#0d7d99; --green:#1f9d63; --amber:#b87d18; --violet:#5358d4; --rose:#c64b7a;
+    --code-bg:#f7f9fa; --code-line:#e4ebee;
+    --disp:'Archivo','Noto Sans SC',sans-serif;
+    --body:'Noto Sans SC',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,monospace;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--bg);color:var(--ink-soft);font-family:var(--body);line-height:1.8;font-weight:400;-webkit-font-smoothing:antialiased;font-size:15.5px}
+  ::selection{background:#bfe6ef;color:#06323d}
+  h1,h2,h3,h4{font-family:var(--disp);color:var(--ink);line-height:1.25;letter-spacing:-.01em}
+  a{color:var(--cyan);text-decoration:none}
+  code{font-family:var(--mono);font-size:.86em;background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;color:var(--cyan)}
+  strong{color:var(--ink);font-weight:700}
+
+  /* —— 封面 —— */
+  .cover{background:linear-gradient(160deg,#0f2a33,#13343f 60%,#0d4250);color:#eaf3f5;padding:54px 0 44px;position:relative;overflow:hidden}
+  .cover:before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.05) 1px,transparent 1px);background-size:42px 42px;opacity:.6}
+  .cover-in{max-width:1180px;margin:0 auto;padding:0 40px;position:relative}
+  .crumb{font-family:var(--mono);font-size:11.5px;letter-spacing:.2em;text-transform:uppercase;color:#6fd6ee}
+  .cover h1{font-family:var(--body);font-weight:900;font-size:clamp(1.9rem,4.4vw,2.9rem);letter-spacing:-.02em;margin:14px 0 12px;color:#fff;line-height:1.18}
+  .cover h1 .hl{color:#54d6f0}
+  .cover p{color:#bcd6dd;font-size:1.06rem;max-width:760px}
+  .cover .meta{font-family:var(--mono);font-size:.8rem;color:#7fd4e8;margin-top:18px}
+
+  .shell{max-width:1180px;margin:0 auto;padding:0 40px;display:grid;grid-template-columns:230px 1fr;gap:44px;align-items:start}
+  nav.toc{position:sticky;top:20px;align-self:start;font-size:13px;border-right:1px solid var(--line);padding:26px 16px 26px 0;max-height:calc(100vh - 40px);overflow:auto}
+  nav.toc .tt{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin:0 0 12px}
+  nav.toc a{display:block;color:var(--dim);padding:5px 0 5px 12px;border-left:2px solid transparent;line-height:1.4}
+  nav.toc a:hover{color:var(--cyan);border-left-color:var(--cyan)}
+  nav.toc a.sub{padding-left:24px;font-size:12px;color:var(--faint)}
+  main{padding:34px 0 90px;min-width:0;max-width:840px}
+
+  h2{font-size:1.7rem;margin:56px 0 6px;padding-top:24px;border-top:2px solid var(--line);scroll-margin-top:16px}
+  h2 .no{font-family:var(--mono);font-size:1rem;color:var(--cyan);font-weight:700;margin-right:12px}
+  h3{font-size:1.22rem;color:var(--ink);margin:34px 0 8px;scroll-margin-top:16px}
+  h4{font-size:1rem;font-weight:700;margin:20px 0 6px}
+  p{margin:11px 0}
+  .lead{font-size:1.05rem;color:var(--dim)}
+  ul,ol{margin:11px 0;padding-left:24px}
+  li{margin:6px 0}
+  li::marker{color:var(--cyan)}
+
+  /* —— 提示框 —— */
+  .box{border-left:3px solid var(--cyan);background:rgba(13,125,153,.06);padding:15px 18px;border-radius:0 10px 10px 0;margin:18px 0;font-size:.95rem}
+  .box .bt{font-family:var(--disp);font-weight:700;color:var(--ink);font-size:.95rem;margin-bottom:5px;display:flex;align-items:center;gap:7px}
+  .box.why{border-color:var(--cyan);background:rgba(13,125,153,.06)} .box.why .bt{color:#0b6680}
+  .box.biz{border-color:var(--green);background:rgba(31,157,99,.06)} .box.biz .bt{color:#17794c}
+  .box.trap{border-color:var(--amber);background:rgba(184,125,24,.08)} .box.trap .bt{color:#8a5e12}
+  .box.judge{border-color:var(--violet);background:rgba(83,88,212,.06)} .box.judge .bt{color:#3f44b0}
+  .box p{margin:6px 0}
+  .box p:first-of-type{margin-top:0}
+
+  /* —— 表格 —— */
+  table{width:100%;border-collapse:collapse;margin:16px 0;font-size:13.6px;background:#fff;border-radius:10px;overflow:hidden;box-shadow:0 1px 2px rgba(19,36,44,.04)}
+  th,td{border:1px solid var(--line);padding:10px 13px;vertical-align:top;text-align:left}
+  thead th{background:#13343f;color:#eaf3f5;font-weight:600;font-size:12.8px}
+  tbody tr:nth-child(even){background:var(--panel-2)}
+  td b{color:var(--ink)}
+
+  /* —— 图 —— */
+  figure.fig{margin:24px 0;border:1px solid var(--line-2);border-radius:13px;background:#fff;overflow:hidden;box-shadow:0 2px 4px rgba(19,36,44,.04),0 14px 36px rgba(19,36,44,.05)}
+  figure.fig .frame{padding:22px 18px 8px;background:linear-gradient(180deg,#fbfdfd,#f4f9fa);overflow-x:auto}
+  figure.fig svg{display:block;width:100%;min-width:520px;height:auto;font-family:var(--mono)}
+  figure.fig figcaption{font-size:12.8px;color:var(--dim);padding:10px 18px;border-top:1px solid var(--line);background:var(--panel-2)}
+  figure.fig figcaption b{color:var(--cyan)}
+
+  /* —— 代码块 —— */
+  figure.code{margin:20px 0;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;background:var(--code-bg);box-shadow:0 2px 4px rgba(19,36,44,.04)}
+  figure.code .chead{display:flex;align-items:center;gap:10px;padding:9px 15px;background:var(--panel-2);border-bottom:1px solid var(--line)}
+  figure.code .dots{display:flex;gap:6px}
+  figure.code .dots i{width:10px;height:10px;border-radius:50%;display:block}
+  figure.code .fname{font-family:var(--mono);font-size:.78rem;color:var(--ink-soft);font-weight:500}
+  figure.code .lang{margin-left:auto;font-family:var(--mono);font-size:.68rem;letter-spacing:.1em;text-transform:uppercase;color:var(--faint)}
+  figure.code pre{margin:0;padding:16px 18px;overflow-x:auto}
+  figure.code code{font-family:var(--mono);font-size:12.6px;line-height:1.65;background:none;border:none;padding:0;color:#1c2b33;white-space:pre}
+  .hljs{background:transparent!important;padding:0!important}
+
+  hr.soft{border:0;border-top:1px solid var(--line);margin:30px 0}
+  footer{border-top:1px solid var(--line);background:#fff;padding:36px 0;text-align:center;color:var(--faint);font-size:12.5px;font-family:var(--mono)}
+
+  @media (max-width:1040px){
+    .shell{grid-template-columns:1fr;gap:0}
+    nav.toc{display:none}
+  }
+  @media print{
+    @page{size:A4;margin:13mm 11mm}
+    .cover{background:#13343f!important}
+    nav.toc{display:none}
+    .shell{grid-template-columns:1fr}
+    figure.fig,figure.code,table{box-shadow:none!important;page-break-inside:avoid;break-inside:avoid}
+    h2{page-break-after:avoid}
+    *{print-color-adjust:exact;-webkit-print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<!-- ══════════ COVER ══════════ -->
+<header class="cover"><div class="cover-in">
+  <div class="crumb">教学文档 · ODPlatform 基础设施第一天 · 之二 / 三</div>
+  <h1>把"看不见的地基"打牢 ②<br><span class="hl">Python 装饰器 与 performance_utils.py</span></h1>
+  <p>地基里第一个要造的工具是 <code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.2);color:#bfeefa">performance_utils.py</code>——给流程测耗时。它的实现核心是<strong>装饰器</strong>:一个没接触过会觉得像魔法、拆开看却毫不神秘的语言点。这一篇从零把它讲到你能自己写、能读懂项目里的真家伙。</p>
+  <p class="meta">// 三份系列:① 仓库组织　·　② Python 装饰器(本篇)　·　③ 日志工具　//　代码与 D1 实战一致</p>
+</div></header>
+
+<div class="shell">
+<!-- ══════════ TOC ══════════ -->
+<nav class="toc">
+  <div class="tt">目录 Contents</div>
+  <a href="#s0">0 · 这一篇要让你搞懂什么</a>
+  <a href="#s1">1 · 一步步理解装饰器</a>
+  <a href="#s1" class="sub">1.0 函数是一等公民</a>
+  <a href="#s1" class="sub">1.1 闭包</a>
+  <a href="#s1" class="sub">1.2 装饰器是什么</a>
+  <a href="#s1" class="sub">1.3 functools.wraps</a>
+  <a href="#s2">2 · 带参数的装饰器(三层)</a>
+  <a href="#s3">3 · time_it:从需求推出设计</a>
+  <a href="#s4">4 · time_it 完整代码 + 导读</a>
+  <a href="#s5">5 · 在项目里怎么用</a>
+  <a href="#s6">6 · 工程判断:横切关注点</a>
+  <a href="#s7">7 · 留个悬念:扩成推理级</a>
+  <a href="#s8">8 · 小结</a>
+</nav>
+
+<!-- ══════════ MAIN ══════════ -->
+<main>
+
+<p class="lead">装饰器(decorator)是 Python 里把"附加行为"干净地贴到函数上的机制,也是第一天最该吃透的语言点。<strong>看懂它,你就看懂了项目里的计时工具、日志工具,以及 Flask、pytest 等几乎所有框架里那些 <code>@</code> 开头的写法。</strong></p>
+
+<!-- ───────── 0 ───────── -->
+<h2 id="s0"><span class="no">0</span>这一篇要让你搞懂什么</h2>
+<p>读完这一篇,你应该能做到三件事:</p>
+<ul>
+  <li><strong>看懂任何一个装饰器</strong>——知道 <code>@something</code> 写在函数上面时,Python 到底偷偷做了什么。</li>
+  <li><strong>自己写一个装饰器</strong>——包括"带参数"的那种(三层嵌套),不再觉得它是魔法。</li>
+  <li><strong>读懂并写出项目里真正的 <code>time_it</code></strong>——理解它每个参数为什么存在,而不是照抄。</li>
+</ul>
+<p>我们从最朴素的地方出发,一步一步推到项目代码。<strong>中间所有小例子都请你打开 Python 亲手跑一遍</strong>——装饰器是"看十遍不如跑一遍"的东西。</p>
+
+<!-- ───────── 1 ───────── -->
+<h2 id="s1"><span class="no">1</span>一步步理解装饰器</h2>
+<p>装饰器不是魔法。把它拆成几步,任何人都能看懂。</p>
+
+<h3>1.0 第 0 步:函数是"一等公民"</h3>
+<p>在 Python 里,<strong>函数和整数、字符串一样</strong>,可以赋值给变量、当参数传、当返回值。这是装饰器的全部基础——先把这件事坐实。</p>
+<figure class="code" data-file="step0_first_class.py" data-lang="python"><script type="text/plain">
+def shout(text):
+    return text.upper() + "!"
+
+# ① 函数可以赋值给变量(注意:没有括号,传的是函数本身,不是调用结果)
+f = shout
+print(f("hi"))            # HI!  —— f 现在就是 shout
+
+# ② 函数可以当参数传给别的函数
+def apply_twice(fn, x):
+    return fn(fn(x))
+print(apply_twice(shout, "go"))   # GO!! —— 被 shout 处理了两次
+</script></figure>
+<div class="box why"><div class="bt">💡 抓住这一点</div>
+<p><code>f = shout</code> 里 <code>shout</code> <strong>没有括号</strong>。<code>shout</code>(无括号)是"函数这个对象本身";<code>shout("hi")</code>(有括号)才是"调用它、拿到结果"。装饰器从头到尾都在玩"把函数当对象传来传去",这个区别务必先盯死。</p></div>
+
+<h3>1.1 第 1 步:闭包——内层函数"记住"外层变量</h3>
+<p>一个函数里可以<strong>再定义一个函数并把它返回</strong>。返回的内层函数会"记住"它出生时所在的外层变量。这叫闭包(closure)。</p>
+<figure class="code" data-file="step1_closure.py" data-lang="python"><script type="text/plain">
+def make_multiplier(n):
+    def multiply(x):          # 内层函数
+        return x * n          # 用到了外层的 n —— 这就是"记住"
+    return multiply           # 把内层函数返回出去(不是调用!没有括号)
+
+double = make_multiplier(2)   # double 记住了 n=2
+triple = make_multiplier(3)   # triple 记住了 n=3
+print(double(10), triple(10)) # 20 30
+</script></figure>
+<p><code>double</code> 和 <code>triple</code> 是同一个 <code>multiply</code> 函数生出来的两个版本,但一个记着 <code>n=2</code>、一个记着 <code>n=3</code>。<strong>"函数 + 它记住的外层变量"</strong>这一对,就是装饰器能"携带配置"的原理。</p>
+
+<h3>1.2 第 2 步:装饰器 = "接收函数、返回增强函数"的函数</h3>
+<p>把闭包用在"包装另一个函数"上,就是装饰器。下面手写一个计时装饰器(<strong>这是教学示例,先不管项目</strong>),看清它到底做了什么。</p>
+<figure class="code" data-file="step2_timer_decorator.py" data-lang="python"><script type="text/plain">
+import time
+
+def timer(func):                      # 接收"被装饰的函数"
+    def wrapper(*args, **kwargs):     # 返回一个"增强版"函数
+        t0 = time.perf_counter()
+        result = func(*args, **kwargs)  # ← 调用原函数,原样转发所有参数
+        dt = time.perf_counter() - t0
+        print(f"[perf] {func.__name__} 用了 {dt*1000:.2f} ms")
+        return result                   # ← 原样返回原函数的结果
+    return wrapper
+
+@timer                 # 这一行,等价于下面注释那一行:
+def load_image(path):  #   load_image = timer(load_image)
+    time.sleep(0.05)
+    return "img"
+
+load_image("a.jpg")    # 控制台打印:[perf] load_image 用了 50.1x ms
+</script></figure>
+<div class="box why"><div class="bt">💡 <code>@timer</code> 只是语法糖</div>
+<p><code>@timer</code> 写在 <code>load_image</code> 上面,Python 会自动执行 <code>load_image = timer(load_image)</code>。也就是说,<strong>原来的 load_image 被悄悄换成了 wrapper</strong>。之后你每次调用 load_image,实际跑的是 wrapper:它先计时、再调真正的原函数、最后打印耗时。业务代码(load_image 函数体)<strong>一个字都没改</strong>。这就是装饰器的全部威力。</p></div>
+
+<figure class="fig"><div class="frame">
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="fl" markerWidth="9" markerHeight="9" refX="6" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 z" fill="#0d7d99"/></marker></defs>
+  <g font-family="JetBrains Mono" font-size="11.5">
+    <rect x="20" y="100" width="120" height="46" rx="9" fill="#fff" stroke="#54666f"/><text x="80" y="122" text-anchor="middle" fill="#13242c">调用方</text><text x="80" y="138" text-anchor="middle" font-size="9.5" fill="#8497a0">load_image("a")</text>
+    <rect x="200" y="60" width="360" height="130" rx="11" fill="rgba(13,125,153,.04)" stroke="#0d7d99" stroke-width="1.5"/>
+    <text x="216" y="80" font-family="Archivo" font-weight="700" font-size="12" fill="#0b6680">wrapper(被装饰后真正执行的)</text>
+    <rect x="216" y="92" width="150" height="34" rx="7" fill="#fff" stroke="#cfe3e9"/><text x="291" y="113" text-anchor="middle" font-size="10.5" fill="#0b6680">① t0 = perf_counter()</text>
+    <rect x="216" y="132" width="328" height="34" rx="7" fill="rgba(31,157,99,.07)" stroke="#bfe3cf"/><text x="380" y="153" text-anchor="middle" font-size="10.5" fill="#17794c">② result = 原函数 load_image("a")</text>
+    <rect x="378" y="92" width="166" height="34" rx="7" fill="#fff" stroke="#cfe3e9"/><text x="461" y="113" text-anchor="middle" font-size="10.5" fill="#0b6680">③ dt、记录/打印</text>
+    <rect x="620" y="100" width="120" height="46" rx="9" fill="#fff" stroke="#54666f"/><text x="680" y="122" text-anchor="middle" fill="#13242c">拿到 result</text><text x="680" y="138" text-anchor="middle" font-size="9.5" fill="#8497a0">+ 已记录耗时</text>
+  </g>
+  <line x1="140" y1="123" x2="198" y2="123" stroke="#0d7d99" stroke-width="1.8" marker-end="url(#fl)"/>
+  <line x1="560" y1="123" x2="618" y2="123" stroke="#0d7d99" stroke-width="1.8" marker-end="url(#fl)"/>
+  <text x="380" y="216" text-anchor="middle" font-family="Noto Sans SC" font-size="11" fill="#54666f">调用方以为在调 load_image,其实调的是 wrapper;wrapper 在原函数前后"夹"了计时。原函数对此毫不知情。</text>
+</svg>
+</div><figcaption><b>图 1</b>　装饰器执行流程:被装饰的函数被悄悄换成 wrapper,wrapper 在<b>调用原函数的前后</b>插入计时逻辑,再把结果原样返回。这就是"在不改函数体的前提下附加行为"。</figcaption></figure>
+
+<h3>1.3 第 3 步:别忘了 <code>functools.wraps</code>(新手最常漏)</h3>
+<p>上面的 wrapper 有个隐患:被装饰后,<code>load_image.__name__</code> 会变成 <code>'wrapper'</code>,文档字符串也丢了。这会让日志、调试、自动文档全部错乱(日志里只看到一片 <code>wrapper</code>,根本分不清是谁)。<code>functools.wraps</code> 就是用来把原函数的"身份证"(名字、文档等)复制到 wrapper 上的。</p>
+<figure class="code" data-file="step3_wraps.py" data-lang="python"><script type="text/plain">
+import time, functools
+
+def timer(func):
+    @functools.wraps(func)            # ← 关键!把 func 的元数据复制给 wrapper
+    def wrapper(*args, **kwargs):
+        t0 = time.perf_counter()
+        try:
+            return func(*args, **kwargs)
+        finally:                       # ← 用 finally:哪怕原函数抛异常,也照样计时
+            dt = time.perf_counter() - t0
+            print(f"[perf] {func.__name__} {dt*1000:.2f} ms")
+    return wrapper
+
+@timer
+def load_image(path):
+    """读取一张影像。"""
+    ...
+
+print(load_image.__name__)   # 加了 wraps → 'load_image'(没加会是 'wrapper')
+print(load_image.__doc__)    # 加了 wraps → '读取一张影像。'(没加会是 None)
+</script></figure>
+<div class="box trap"><div class="bt">⚠ 两个新手必踩的点</div>
+<p><strong>一、</strong><code>@functools.wraps(func)</code> 几乎是写装饰器的"标配第一行",忘了它日志就会乱套。<strong>二、</strong>这里用 <code>try/finally</code> 而不是顺着写:<code>finally</code> 保证<strong>哪怕原函数中途抛异常,计时也照样落下</strong>——出了事更要知道它跑了多久。这两个习惯,项目里的 <code>time_it</code> 也都用上了。</p></div>
+
+<!-- ───────── 2 ───────── -->
+<h2 id="s2"><span class="no">2</span>带参数的装饰器(三层嵌套)</h2>
+<p>真实工具里,我们常想这样用:<code>@timer("数据转换")</code>——给计时打个标签。这就要求装饰器先<strong>接收参数</strong>,再<strong>接收函数</strong>,于是多一层嵌套,变成三层。</p>
+<figure class="code" data-file="step4_parametrized.py" data-lang="python"><script type="text/plain">
+import time, functools
+
+def timer(label=None):                        # ① 最外层:接收参数 label
+    def decorator(func):                       # ② 中间层:接收被装饰的函数
+        name = label or func.__qualname__      #    没给 label 就用函数名兜底
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):          # ③ 最内层:真正执行时拦截
+            t0 = time.perf_counter()
+            try:
+                return func(*args, **kwargs)
+            finally:
+                dt = time.perf_counter() - t0
+                print(f"[perf] {name} {dt*1000:.2f} ms")
+        return wrapper
+    return decorator
+
+@timer("数据转换")          # 等价于:convert = timer("数据转换")(convert)
+def convert(src, dst):
+    ...
+</script></figure>
+<div class="box why"><div class="bt">💡 记忆口诀:几层括号,几层函数</div>
+<p><code>@timer("x")</code> 比 <code>@timer</code> 多了一对括号(传参),所以<strong>多包一层</strong>。三层各司其职:<strong>外层收参数 → 中层收函数 → 内层做事</strong>。<br>看懂这三层,你就看懂了 Flask 的 <code>@app.route("/")</code>、pytest 的 <code>@pytest.mark.parametrize(...)</code> ——所有"带括号的装饰器"都是这个结构。<strong>项目里的 <code>time_it</code> 正是三层结构。</strong></p></div>
+
+<!-- ───────── 3 ───────── -->
+<h2 id="s3"><span class="no">3</span>time_it:从真实需求推出设计</h2>
+<p>概念讲完,该看项目里的真家伙了。它叫 <code>time_it</code>(<strong>带下划线</strong>,别和上面教学用的 <code>timer</code> 或 Python 标准库的 <code>timeit</code> 搞混),住在 <code>common/performance_utils.py</code> 里。</p>
+<p>它的形状不是凭空设计的,是被<strong>第一天初始化项目时的真实需求</strong>逼出来的。把需求列出来,设计就自己长出来了:</p>
+<table>
+  <thead><tr><th style="width:230px">真实需求</th><th>逼出的设计决策</th></tr></thead>
+  <tbody>
+    <tr><td>给"项目初始化"这种<b>一次性流程</b>计时,一行贴上去就好</td><td>做成<b>装饰器</b> <code>@time_it()</code>,贴在函数上,函数体不动</td></tr>
+    <tr><td>有些快函数跑一次看不准,想<b>多跑几次取平均</b></td><td>加参数 <code>iterations</code>:循环跑 N 次,报平均(必要时也报总耗时)</td></tr>
+    <tr><td>耗时可能是几微秒,也可能是几分钟,<b>单位要好读</b></td><td>内部 <code>_format_time_auto_unit</code>:自动在 微秒/毫秒/秒/分钟/小时 之间切换</td></tr>
+    <tr><td>日志里要能看出"这条耗时是<b>哪个模块</b>报的"</td><td>加参数 <code>logger_instance</code>:让调用方把自己的 logger 传进来</td></tr>
+    <tr><td>有些场景每次调用<b>名字都不一样</b>(比如逐项质检)</td><td><code>name</code> 不仅能传字符串,还能传一个<b>函数</b>,运行时动态算出名字</td></tr>
+    <tr><td>计时要<b>准</b>、不受改系统时钟影响</td><td>用 <code>time.perf_counter()</code>(单调高精度),不用 <code>time.time()</code></td></tr>
+  </tbody>
+</table>
+
+<figure class="fig"><div class="frame">
+<svg viewBox="0 0 760 250" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="u1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L7,4 L0,8 z" fill="#8497a0"/></marker></defs>
+  <rect x="14" y="14" width="732" height="222" rx="13" fill="rgba(13,125,153,.03)" stroke="#cfe3e9"/>
+  <text x="34" y="40" font-family="JetBrains Mono" font-weight="700" font-size="12.5" fill="#0b6680">time_it 的三层结构(带参数的装饰器)</text>
+
+  <rect x="34" y="58" width="220" height="150" rx="10" fill="#fff" stroke="#0d7d99" stroke-width="1.4"/>
+  <text x="48" y="80" font-family="JetBrains Mono" font-size="12" fill="#0d7d99" font-weight="700">① time_it(...)</text>
+  <text x="48" y="100" font-family="Noto Sans SC" font-size="10.5" fill="#54666f">最外层 · 接收参数</text>
+  <text x="48" y="122" font-family="JetBrains Mono" font-size="9.5" fill="#8497a0">iterations</text>
+  <text x="48" y="138" font-family="JetBrains Mono" font-size="9.5" fill="#8497a0">name (str / callable)</text>
+  <text x="48" y="154" font-family="JetBrains Mono" font-size="9.5" fill="#8497a0">logger_instance</text>
+  <text x="48" y="180" font-family="Noto Sans SC" font-size="10" fill="#54666f">顺手选好 log、</text>
+  <text x="48" y="196" font-family="Noto Sans SC" font-size="10" fill="#54666f">备好两个辅助函数</text>
+
+  <rect x="270" y="58" width="220" height="150" rx="10" fill="#fff" stroke="#5358d4" stroke-width="1.4"/>
+  <text x="284" y="80" font-family="JetBrains Mono" font-size="12" fill="#3f44b0" font-weight="700">② decorator(func)</text>
+  <text x="284" y="100" font-family="Noto Sans SC" font-size="10.5" fill="#54666f">中间层 · 接收被装饰函数</text>
+  <text x="284" y="128" font-family="Noto Sans SC" font-size="10.5" fill="#54666f">用 @wraps(func)</text>
+  <text x="284" y="146" font-family="Noto Sans SC" font-size="10.5" fill="#54666f">保住原函数身份证</text>
+  <text x="284" y="180" font-family="Noto Sans SC" font-size="10" fill="#8497a0">返回内层 wrapper</text>
+
+  <rect x="506" y="58" width="220" height="150" rx="10" fill="#fff" stroke="#1f9d63" stroke-width="1.4"/>
+  <text x="520" y="80" font-family="JetBrains Mono" font-size="12" fill="#1f9d63" font-weight="700">③ wrapper(*a, **k)</text>
+  <text x="520" y="100" font-family="Noto Sans SC" font-size="10.5" fill="#54666f">最内层 · 真正执行时拦截</text>
+  <text x="520" y="128" font-family="Noto Sans SC" font-size="10.5" fill="#17794c">循环 iterations 次计时</text>
+  <text x="520" y="146" font-family="Noto Sans SC" font-size="10.5" fill="#17794c">算平均 → 自动选单位</text>
+  <text x="520" y="164" font-family="Noto Sans SC" font-size="10.5" fill="#17794c">log.info("性能报告: ...")</text>
+  <text x="520" y="192" font-family="Noto Sans SC" font-size="10" fill="#8497a0">原样返回 result</text>
+
+  <line x1="254" y1="133" x2="268" y2="133" stroke="#8497a0" stroke-width="1.5" marker-end="url(#u1)"/>
+  <line x1="490" y1="133" x2="504" y2="133" stroke="#8497a0" stroke-width="1.5" marker-end="url(#u1)"/>
+</svg>
+</div><figcaption><b>图 2</b>　<code>time_it</code> 就是第 2 节那个"三层结构"的真实版:<b>外层收参数(iterations/name/logger)→ 中层收函数 → 内层循环计时并打日志</b>。职责单一、层层递进。</figcaption></figure>
+
+<!-- ───────── 4 ───────── -->
+<h2 id="s4"><span class="no">4</span>time_it 完整代码 + 逐段导读</h2>
+<p>下面是项目里 <code>common/performance_utils.py</code> 的<strong>完整真实代码</strong>——你在 D1 实战里敲的就是这一份,一字不差。先通读一遍,再看下面的逐段导读。</p>
+<figure class="code" data-file="od_platform/common/performance_utils.py" data-lang="python"><script type="text/plain">
+#!/usr/bin/env python
+# -*- coding:utf-8 -*-
+# @FileName  : performance_utils.py
+# @Project   : ODPlatform
+# @Function  : 性能测量工具——@time_it 装饰器 (name 支持 callable 的兼容版)
+
+import logging
+import time
+from functools import wraps
+from typing import Callable, Optional, Union
+
+# 业务模块标准写法:拿一个以本模块命名的 logger,只管"发声"
+logger = logging.getLogger(__name__)
+
+
+def time_it(
+    iterations: int = 1,
+    name: Optional[Union[str, Callable[..., str]]] = None,
+    logger_instance: logging.Logger = None,
+):
+    """通用执行时间测量装饰器。
+
+    name 可以传:
+        - None      : 用被装饰函数的 __name__
+        - str       : 固定显示名
+        - callable  : 一个接收"被装饰函数运行期实参"的函数,返回显示名
+                      用于每次调用名字不同的场景
+
+    Examples:
+        @time_it()
+        def my_func(): ...
+
+        @time_it(iterations=10, name="批量推理")
+        def infer_batch(): ...
+
+        @time_it(logger_instance=logging.getLogger("my_module"))
+        def custom(): ...
+    """
+    # 默认用本模块的 logger;调用方可以传一个特定 logger 进来
+    # (比如希望日志带着调用方的 logger 名,一眼看出是谁报的耗时)
+    log = logger_instance if logger_instance is not None else logger
+
+    def _format_time_auto_unit(seconds: float) -> str:
+        """根据耗时长短,自动选择合适的单位,让数字好读。"""
+        if seconds < 0.001:
+            return f"{seconds * 1_000_000:.3f} 微秒"
+        elif seconds < 1.0:
+            return f"{seconds * 1000:.3f} 毫秒"
+        elif seconds < 60:
+            return f"{seconds:.2f} 秒"
+        elif seconds < 3600:
+            mins = seconds // 60
+            secs = seconds % 60
+            return f"{mins:.0f} 分钟 {secs:.2f} 秒"
+        else:
+            hours = seconds // 3600
+            mins = (seconds % 3600) // 60
+            secs = (seconds % 3600) % 60
+            return f"{hours:.0f} 小时 {mins:.0f} 分钟 {secs:.2f} 秒"
+
+    def _resolve_name(func, args, kwargs) -> str:
+        # 只有 callable 才走"运行期取名"; str / None 完全保持简单逻辑
+        if callable(name):
+            try:
+                return name(*args, **kwargs)
+            except Exception:
+                # 取名失败绝不能拖垮被测函数 —— 退回函数名,测量照常进行
+                log.warning(f"time_it: name() 计算失败, 回退到 {func.__name__}", exc_info=True)
+                return func.__name__
+        if name is not None:
+            return name
+        return func.__name__
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            display_name = _resolve_name(func, args, kwargs)
+            total = 0.0
+            result = None
+            for _ in range(iterations):
+                start = time.perf_counter()
+                result = func(*args, **kwargs)
+                end = time.perf_counter()
+                total += (end - start)
+
+            avg = total / iterations
+            avg_str = _format_time_auto_unit(avg)
+
+            if iterations == 1:
+                log.info(
+                    f"性能报告: '{display_name}' 执行 {iterations} 次 ,  耗时: {avg_str}"
+                )
+            else:
+                total_str = _format_time_auto_unit(total)
+                log.info(
+                    f"性能报告: '{display_name}' 执行 {iterations} 次 | "
+                    f"总耗时: {total_str} | 平均耗时: {avg_str}"
+                )
+
+            return result
+        return wrapper
+    return decorator
+
+
+if __name__ == "__main__":
+    # 自测:单独配一个简单 handler——真实使用中, CLI 入口已经配好了, 这里不用
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(message)s",
+                        datefmt="%H:%M:%S")
+
+    @time_it(name="测试睡眠 0.1 秒")
+    def test_sleep():
+        time.sleep(0.1)
+
+    @time_it(iterations=5, name="测试快函数")
+    def test_fast():
+        sum(range(1000))
+
+    test_sleep()
+    test_fast()
+</script></figure>
+
+<h4>逐段导读(看完上面代码再读这里)</h4>
+<ul>
+  <li><strong><code>logger = logging.getLogger(__name__)</code>(模块顶部)。</strong>这是从今天起所有业务模块的<strong>标准开头</strong>:拿一个以本模块命名的 logger,只负责"发声"。它怎么变成彩色、怎么进文件,是日志工具的事(见第三篇),这里不操心。</li>
+  <li><strong>三层结构。</strong><code>time_it(...)</code> 收参数 → <code>decorator(func)</code> 收函数 → <code>wrapper(...)</code> 真正执行。和第 2 节的口诀完全对上:几层括号几层函数。</li>
+  <li><strong><code>log = logger_instance if ... else logger</code>。</strong>这是参数里最实用的一个:不传就用本模块 logger;传了就用调用方的。项目里 <code>init_project</code> 就传了自己的 logger,于是日志里显示"这条耗时来自 <code>od_platform.cli.init_project</code>",一眼可读。</li>
+  <li><strong><code>_resolve_name</code> 为什么套 <code>try/except</code>?</strong>当 <code>name</code> 是个函数(运行期算名字)时,万一它自己算崩了,<strong>绝不能连累被测函数</strong>——所以兜底退回函数名,只打个 warning,测量照常进行。这是"工具不能比业务还脆弱"的体现。</li>
+  <li><strong><code>iterations</code> 循环。</strong><code>for</code> 里跑 N 次、累加耗时,再求平均。<code>iterations == 1</code> 时只报一次耗时;多次时额外报总耗时。<strong>注意计时用 <code>time.perf_counter()</code></strong>——单调、高精度,不会因为系统时间被改而算出负数。</li>
+  <li><strong><code>@wraps(func)</code>。</strong>就是第 3 步讲的"保住原函数身份证",让日志里 <code>%(funcName)s</code> 显示真名而不是 <code>wrapper</code>。</li>
+</ul>
+<div class="box biz"><div class="bt">🏢 对照一下:你学的概念,全用上了</div>
+<p>闭包(wrapper 记住外层的 <code>iterations</code>/<code>name</code>/<code>log</code>)、三层嵌套(带参数)、<code>functools.wraps</code>、<code>try/except</code> 兜底、<code>perf_counter</code> 计时——第 1、2 节铺垫的每一块,在这份真实代码里都能找到落点。<strong>这就是"概念"变成"产品代码"的样子。</strong></p></div>
+
+<!-- ───────── 5 ───────── -->
+<h2 id="s5"><span class="no">5</span>在项目里怎么用</h2>
+<p>D1 实战里,<code>time_it</code> 第一次真正上场,是给"项目初始化"这整个流程计时。用法就一行装饰器:</p>
+<figure class="code" data-file="od_platform/cli/init_project.py(节选)" data-lang="python"><script type="text/plain">
+import logging
+from od_platform.common.performance_utils import time_it
+
+logger = logging.getLogger(__name__)          # 本模块的 logger
+
+
+@time_it(iterations=1, name="项目初始化", logger_instance=logger)
+def initialize_project() -> None:
+    """初始化项目核心目录 + 检查原始数据状态。"""
+    ...                                        # 建目录、打印环境快照、汇总……
+    # 函数体里【完全不写任何计时代码】——计时由 @time_it 在外面"夹"好了
+</script></figure>
+<p>跑完后,日志里会自动多出这样一行(名字、来源、耗时一应俱全):</p>
+<figure class="code" data-file="控制台输出(示意)" data-lang="text"><script type="text/plain">
+... - od_platform.cli.init_project - INFO - 性能报告: '项目初始化' 执行 1 次 ,  耗时: 12.345 毫秒
+</script></figure>
+<p>而模块自测(<code>python performance_utils.py</code>)则演示了另外两种用法——固定名字、以及 <code>iterations=5</code> 多次求平均:</p>
+<figure class="code" data-file="自测两种用法" data-lang="python"><script type="text/plain">
+@time_it(name="测试睡眠 0.1 秒")     # 测单次
+def test_sleep():
+    time.sleep(0.1)
+
+@time_it(iterations=5, name="测试快函数")   # 跑 5 次求平均(快函数单次测不准)
+def test_fast():
+    sum(range(1000))
+</script></figure>
+
+<!-- ───────── 6 ───────── -->
+<h2 id="s6"><span class="no">6</span>工程判断:为什么用装饰器做这件事</h2>
+<div class="box judge"><div class="bt">🧭 横切关注点,要"贴"上去,不要"抄"进去</div>
+<p>计时是典型的<strong>横切关注点</strong>:它和"这个函数在算什么"毫无关系,但到处都要。装饰器让你把它"贴"上去,而不是把 <code>t0=...; t1=...</code> 抄进每个函数体里污染逻辑。<strong>把非功能性关注点(计时、日志、重试、缓存)从功能代码里剥离,是这门课最值钱的工程判断之一。</strong>下一篇的日志工具,走的是同一种思想。</p></div>
+
+<!-- ───────── 7 ───────── -->
+<h2 id="s7"><span class="no">7</span>留个悬念:如果让你把它扩成"推理级"性能工具 🚀</h2>
+<p>今天这个 <code>time_it</code> 解决的是"给一个流程测一次耗时"。但等你后面写到<strong>推理</strong>那一块,需求会变得更刁钻。下面这些问题,我们今天<strong>故意不解决</strong>——留给你先想,留给推理课去答。能想清"该往这个装饰器上加什么",你对装饰器的理解就从"会用"升到了"会设计"。</p>
+<div class="box why"><div class="bt">🤔 留给你的几个开放问题</div>
+<p><strong>① 我想测的不是"整个函数",而是"函数里的一小段"怎么办?</strong><br>装饰器只能包整个函数。要测一段代码,得换个工具。<em>(方向:<strong>上下文管理器</strong> <code>with Timer("preprocess"): ...</code>——Python 里和装饰器并列的另一种"包裹"机制。)</em></p>
+<p><strong>② 推理一帧的耗时没意义,我要"1000 帧里平均/最差/p95 是多少"。</strong><br><code>time_it</code> 每次调用各打各的,不会跨调用累加。<em>(方向:做一个<strong>统计累加器</strong>,把每次耗时按标签收集起来,最后算 avg/min/max/p95 再统一报告。)</em></p>
+<p><strong>③ 推理是多线程的,多个线程同时记耗时会不会打架?</strong><br>会。多个线程同时往一个列表里写,可能丢数据或报错。<em>(方向:<strong>线程锁</strong> <code>threading.Lock</code> 保护那一下写入。)</em></p>
+<p><strong>④ 生产环境上线后,我不想让计时拖慢系统,能一键关掉吗?</strong><br>现在它总是会计时。<em>(方向:一个<strong>全局开关</strong>,关闭时让装饰器退化成"直接调原函数",近零开销。)</em></p>
+<p><strong>⑤ 我想看推理循环的实时帧率(FPS)。</strong><br>这是另一种统计口径。<em>(方向:一个<strong>滑动窗口</strong>,记住最近 N 帧的时间戳,用帧数除以时间跨度。)</em></p>
+<p>这些都不是今天要写的——它们是"性能工具"这条线后面会长出来的枝。今天你先把<strong>一个装饰器怎么从需求推出设计、怎么逐行写对</strong>吃透,就够了。</p></div>
+
+<!-- ───────── 8 ───────── -->
+<h2 id="s8"><span class="no">8</span>小结</h2>
+<ul>
+  <li><strong>装饰器不是魔法。</strong>它建立在"函数是一等公民 + 闭包"之上,本质是"接收一个函数、返回一个增强函数",<code>@</code> 只是 <code>f = deco(f)</code> 的语法糖。</li>
+  <li><strong>三层口诀:几层括号几层函数。</strong>带参数的装饰器 = 外层收参数 → 中层收函数 → 内层做事。项目里的 <code>time_it</code> 就是这个结构。</li>
+  <li><strong>两个标配习惯:</strong><code>@functools.wraps(func)</code> 保住原函数身份证;<code>perf_counter</code> 做高精度单调计时。</li>
+  <li><strong>设计是被需求逼出来的。</strong><code>time_it</code> 的每个参数(<code>iterations</code>/<code>name</code>/<code>logger_instance</code>)都对应一条真实需求,不是为了花哨。</li>
+  <li><strong>横切关注点要剥离。</strong>计时"贴"上去、别抄进函数体——这是贯穿整个 common 层的思想。</li>
+</ul>
+<div class="box judge"><div class="bt">🧭 通往下一篇</div>
+<p>计时报告要打到哪儿去?当然不是裸 <code>print</code>。下一篇我们就造另一个 common 工具——<strong>日志工具</strong>。你会看到 <code>time_it</code> 里那行 <code>logging.getLogger(__name__)</code> 背后,藏着一整套"业务发声、基础设施配音响"的设计。</p></div>
+
+</main>
+</div>
+
+<footer>
+  ODPlatform · 基础设施教学(第一天 · 之二)　//　Python 装饰器 与 performance_utils.py　//　可打印留存
+</footer>
+<!-- highlight.js(在线时高亮;离线则原样显示,代码照常可读) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+  // 把每个 <figure class="code"> 里的原始代码安全注入为高亮代码块。
+  // 用 textContent 写入,浏览器自动转义 < & 等,无需手动转义。
+  document.querySelectorAll('figure.code').forEach(function(fig){
+    var raw = fig.querySelector('script[type="text/plain"]').textContent.replace(/^\n/, '').replace(/\s+$/, '');
+    var fname = fig.getAttribute('data-file') || '';
+    var lang = fig.getAttribute('data-lang') || 'python';
+    // 头部条
+    var head = document.createElement('div');
+    head.className = 'chead';
+    head.innerHTML = '<span class="dots"><i style="background:#e0524b"></i><i style="background:#e3b341"></i><i style="background:#3fb950"></i></span>'
+                   + '<span class="fname">' + fname + '</span><span class="lang">' + lang + '</span>';
+    // 代码体
+    var pre = document.createElement('pre');
+    var code = document.createElement('code');
+    code.className = 'language-' + lang;
+    code.textContent = raw;            // ← 关键:自动转义,代码原样
+    pre.appendChild(code);
+    fig.innerHTML = '';
+    fig.appendChild(head);
+    fig.appendChild(pre);
+    if (window.hljs) { try { hljs.highlightElement(code); } catch(e){} }
+  });
+</script>
+</body>
+</html>
