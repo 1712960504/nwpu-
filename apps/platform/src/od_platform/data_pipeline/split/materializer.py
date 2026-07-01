@@ -11,6 +11,15 @@ from od_platform.data_pipeline.split.manifest import PairList, SplitManifest
 
 logger = logging.getLogger(__name__)
 
+# 相对路径约定 —— yaml_writer 等模块从这里取，而不是各自硬编码。
+TRAIN_IMAGES_REL = "train/images"
+VAL_IMAGES_REL = "val/images"
+TEST_IMAGES_REL = "test/images"
+TRAIN_LABELS_REL = "train/labels"
+VAL_LABELS_REL = "val/labels"
+TEST_LABELS_REL = "test/labels"
+
+
 @dataclass(frozen=True)
 class SplitOutputDirs:
     train_images: Path
@@ -21,19 +30,20 @@ class SplitOutputDirs:
     test_labels: Path
 
     @classmethod
-    def for_dataset_root(cls, root:Path) -> "SplitOutputDirs":
+    def for_dataset_root(cls, root: Path) -> "SplitOutputDirs":
         return cls(
-            train_images = root / "train" / "images",
-            val_images = root / "val" / "images",
-            test_images = root / "test" / "images",
-            train_labels = root / "train" / "labels",
-            val_labels = root / "val" / "labels",
-            test_labels = root / "test" / "labels",
+            train_images=root / TRAIN_IMAGES_REL,
+            val_images=root / VAL_IMAGES_REL,
+            test_images=root / TEST_IMAGES_REL,
+            train_labels=root / TRAIN_LABELS_REL,
+            val_labels=root / VAL_LABELS_REL,
+            test_labels=root / TEST_LABELS_REL,
         )
 
     def all_dirs(self):
-        return (self.train_images, self.train_labels, self.test_images,
-                self.test_labels, self.val_images, self.val_labels)
+        return (self.train_images, self.train_labels,
+                self.val_images, self.val_labels,
+                self.test_images, self.test_labels)
 
 def _place(src: Path, dst: Path) -> None:
     if dst.exists():

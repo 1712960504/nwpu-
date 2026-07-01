@@ -5,7 +5,10 @@ from pathlib import Path
 from typing import List
 import yaml
 
-from od_platform.data_pipeline.split.manifest import  SplitManifest
+from od_platform.data_pipeline.split.manifest import SplitManifest
+from od_platform.data_pipeline.split.materializer import (
+    TRAIN_IMAGES_REL, VAL_IMAGES_REL, TEST_IMAGES_REL,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -22,9 +25,9 @@ def write_dataset_yaml(yaml_path: Path,
     yaml_path.parent.mkdir(parents=True, exist_ok=True)
     doc = {
         "path": str(dataset_root),
-        "train": "train/images",
-        "val": "val/images",
-        "test": "test/images",
+        "train": TRAIN_IMAGES_REL,
+        "val": VAL_IMAGES_REL,
+        "test": TEST_IMAGES_REL,
         "names": {i: name for i, name in enumerate(classes)},
         "nc": len(classes),
         "odp_meta": {

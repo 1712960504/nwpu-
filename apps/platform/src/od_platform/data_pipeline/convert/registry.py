@@ -1,8 +1,7 @@
 """convert 框架层:一张表(格式名→条目) + 登记装饰器 @register + 参数包 ConvertOptions。
 
 框架(本文件 + service.py)永远不动;加新格式 = 在 converters/ 加一个文件。
-注:本阶段把"扫描 converters/ 目录"的逻辑【内联】在 _lazy_init 里;等阶段 4 的 split
-   第二张表也要同样扫描时,我们才把它抽进 common/registry_utils.py(第二次才抽象)。
+自动发现逻辑已抽到 common/registry_utils.import_submodules，convert 和 split 共用。
 """
 from __future__ import annotations
 
@@ -80,9 +79,9 @@ def available_formats() -> List[str]:
 
 
 def list_capabilities() -> Dict[str, Tuple[str, ...]]:
-    """返回 {格式名: 支持的 task 元组} 的能力映射(会先触发自动发现)。
+    """列出每种格式及其支持的 task(会先触发自动发现)。
 
-    供 CLI / 测试 / 报告等需要"一张表看清所有格式能干什么"的场景使用。
+    返回值示例: {'coco': ('detect', 'segment'), 'pascal_voc': ('detect',)}
     """
     _lazy_init()
     return {name: entry.supported_tasks for name, entry in _REGISTRY.items()}
@@ -100,9 +99,7 @@ def _lazy_init() -> None:
     global _LAZY_INITIALIZED
     if _LAZY_INITIALIZED:
         return
-    import importlib, pkgutil
     from od_platform.data_pipeline.convert import converters
-    for m in pkgutil.iter_modules(converters.__path__):
-        if not m.name.startswith("_"):
-            importlib.import_module(f"{converters.__name__}.{m.name}")
+    from od_platform.common.registry_utils import import_submodules
+    import_submodules(converters)
     _LAZY_INITIALIZED = True

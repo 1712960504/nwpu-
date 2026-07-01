@@ -71,7 +71,8 @@ runs/*
 
 # 端私有日志
 apps/platform/logging/
-apps/platform/meta_logging/
+# 工具元数据(reset/doctor 等元工具的审计日志,本地运行历史)
+.odp-meta/
 *.log
 apps/platform/configs/
 !apps/platform/configs/README.md

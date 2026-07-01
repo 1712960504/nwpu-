@@ -142,7 +142,7 @@ def _print_plan(
     logger.info(f"   • models/pretrained/ — 预训练权重")
     logger.info(f"   • apps/              — 代码（git-tracked）")
     logger.info(f"   • .git/              — 版本控制")
-    logger.info(f"   • meta_logging/      — 审计日志")
+    logger.info(f"   • .odp-meta/logs/   — 审计日志")
 
 
 # ============================================================
