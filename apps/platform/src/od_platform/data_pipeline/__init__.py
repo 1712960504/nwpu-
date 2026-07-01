@@ -1,17 +1,8 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @FileName  :__init__.py.py
-# @Time      :2026/6/30 15:22:36
-# @Author    :雨霓同学
-# @Project   :ODPlatform
-# @Function  :
-if __name__ == "__main__":
-    # 运行时获取实际路径信息
-    import sys, os, platform
+"""data_pipeline - 数据流水线子系统
 
-    print("\n===== 环境信息 =====")
-    print(f"解释器路径: {sys.executable}")
-    print(f"脚本路径: {os.path.abspath(__file__)}")
-    print(f"操作系统: {platform.system()} {platform.release()}")
+将 data/raw/ 下的原始标注转换成 YOLO 格式，划分 train/val/test，
+生成可直接喂给 ultralytics 的 dataset.yaml。
 
-    run_code = 0
+子模块:
+- convert: 标注格式转换（VOC / COCO / YOLO → YOLO）
+"""

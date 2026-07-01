@@ -79,6 +79,15 @@ def available_formats() -> List[str]:
     return sorted(_REGISTRY)
 
 
+def list_capabilities() -> Dict[str, Tuple[str, ...]]:
+    """返回 {格式名: 支持的 task 元组} 的能力映射(会先触发自动发现)。
+
+    供 CLI / 测试 / 报告等需要"一张表看清所有格式能干什么"的场景使用。
+    """
+    _lazy_init()
+    return {name: entry.supported_tasks for name, entry in _REGISTRY.items()}
+
+
 # ── 自动发现:首次用表时,扫描 converters/ 把每个实现 import 一遍,触发它们的 @register ──
 _LAZY_INITIALIZED = False
 

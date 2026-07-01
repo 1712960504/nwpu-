@@ -1,17 +1,5 @@
-#!/usr/bin/env python
-# -*- coding:utf-8 -*-
-# @FileName  :__init__.py.py
-# @Time      :2026/6/30 15:59:59
-# @Author    :雨霓同学
-# @Project   :ODPlatform
-# @Function  :
-if __name__ == "__main__":
-    # 运行时获取实际路径信息
-    import sys, os, platform
+"""converters - 标注格式转换器集合
 
-    print("\n===== 环境信息 =====")
-    print(f"解释器路径: {sys.executable}")
-    print(f"脚本路径: {os.path.abspath(__file__)}")
-    print(f"操作系统: {platform.system()} {platform.release()}")
-
-    run_code = 0
+每个文件实现一种标注格式 → YOLO 的转换，通过 @register 装饰器自动注册。
+加新格式只需在此目录新增一个文件，框架层无需任何改动。
+"""
