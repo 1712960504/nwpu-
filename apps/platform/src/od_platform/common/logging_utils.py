@@ -11,6 +11,7 @@
 #   - CLI 入口: 调用一次 get_logger() 完成 handler 装配,
 #               之后所有 getLogger(__name__) 通过冒泡机制自动继承
 
+import io
 import logging
 import sys
 import platform
@@ -18,6 +19,16 @@ from datetime import datetime
 from pathlib import Path
 from typing import Optional
 from colorlog import ColoredFormatter
+
+
+# ---- 修复 Windows GBK 终端 emoji/中文编码问题 ----
+# 必须在创建 StreamHandler 之前执行，否则 handler 会捕获原始的 GBK stdout
+def _fix_stdout_encoding():
+    """若 stdout 为 GBK 编码则替换为 UTF-8 wrapper（幂等，多次调用安全）。"""
+    if sys.stdout.encoding and sys.stdout.encoding.upper() in ("GBK", "GB2312", "GB18030"):
+        sys.stdout = io.TextIOWrapper(
+            sys.stdout.buffer, encoding="utf-8", errors="replace"
+        )
 
 
 # 项目根 logger 名 = 顶层 Python 包名
@@ -59,8 +70,12 @@ def get_logger(
         配置好的 logging.Logger 实例
     """
     # ============================================================
-    # 1. 获取/复用命名 Logger
+    # 1. 修复 stdout 编码 & 获取/复用命名 Logger
     # ============================================================
+    # 必须在创建 StreamHandler 之前修复 stdout 编码，
+    # 否则 Windows GBK 终端无法输出 emoji 和部分中文字符。
+    _fix_stdout_encoding()
+
     logger = logging.getLogger(logger_name)
     # 幂等保护: getLogger 是 singleton——同一个 logger_name 多次调用拿到同一对象。
     # 第一次调用配置好 handler 后, 后续调用直接返回, 避免重复挂多份 handler
